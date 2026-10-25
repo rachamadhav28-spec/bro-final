@@ -27,9 +27,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         instance = null
     }
 
-    /**
-     * Opens Quick Settings and clicks a tile matching "Wi-Fi", "Internet", or "Mobile data"
-     */
     fun toggleQuickSettingTile(tileName: String): Boolean {
         performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
         Thread.sleep(900)
@@ -40,9 +37,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         return clicked
     }
 
-    /**
-     * Reads all visible text on the screen (Used for checking Claude usage limits or reading messages)
-     */
     fun scrapeCurrentScreenText(): String {
         val root = rootInActiveWindow ?: return "Accessibility Service not active or window unavailable."
         val builder = StringBuilder()
@@ -62,9 +56,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         }
     }
 
-    /**
-     * Finds a UI element by text/description and clicks it
-     */
     fun findAndClickNodeByText(root: AccessibilityNodeInfo?, targetText: String): Boolean {
         if (root == null) return false
         val nodes = root.findAccessibilityNodeInfosByText(targetText)
@@ -85,9 +76,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         return false
     }
 
-    /**
-     * Types text into the first editable text field on screen (e.g., Instagram DM box) and clicks Send
-     */
     fun typeAndSendMessage(message: String): String {
         val root = rootInActiveWindow ?: return "Error: Enable Jarvis Accessibility Service first."
         val editNode = findEditableNode(root) ?: return "Error: No text input box found on screen."
