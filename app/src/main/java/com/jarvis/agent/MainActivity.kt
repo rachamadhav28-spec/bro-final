@@ -16,7 +16,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,6 +49,8 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         super.onCreate(savedInstanceState)
 
         tts = TextToSpeech(this, this)
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+
         val requestMicPermission = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) {}
@@ -71,6 +72,29 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                 onSpeak = { text ->
                     val cleanSpeech = text.substringBefore("[EXECUTION LOG]").substringBefore("[GENERATED CODE]")
                     tts.speak(cleanSpeech, TextToSpeech.QUEUE_FLUSH, null, "JARVIS_UTTERANCE")
+                },
+                onStartVoiceListening = { onResult ->
+                    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                    }
+                    speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+                        override fun onReadyForSpeech(params: Bundle?) {}
+                        override fun onBeginningOfSpeech() {}
+                        override fun onRmsChanged(rmsdB: Float) {}
+                        override fun onBufferReceived(buffer: ByteArray?) {}
+                        override fun onEndOfSpeech() {}
+                        override fun onError(error: Int) {}
+                        override fun onResults(results: Bundle?) {
+                            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                            if (!matches.isNullOrEmpty()) {
+                                onResult(matches[0])
+                            }
+                        }
+                        override fun onPartialResults(partialResults: Bundle?) {}
+                        override fun onEvent(eventType: Int, params: Bundle?) {}
+                    })
+                    speechRecognizer?.startListening(intent)
                 },
                 onOpenAccessibilitySettings = {
                     startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -99,6 +123,7 @@ fun JarvisHudScreen(
     prefs: android.content.SharedPreferences,
     geminiBrain: GeminiBrain,
     onSpeak: (String) -> Unit,
+    onStartVoiceListening: ((String) -> Unit) -> Unit,
     onOpenAccessibilitySettings: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -189,7 +214,7 @@ fun JarvisHudScreen(
                     onClick = onOpenAccessibilitySettings,
                     colors = ButtonDefaults.buttonColors(containerColor = NeonCyan.copy(alpha = 0.2f))
                 ) {
-                    Text("Enable Accessibility Service (For Insta/Claude/Wi-Fi)", color = NeonCyan)
+                    Text("Enable Accessibility Service (Insta/Claude/Wi-Fi)", color = NeonCyan)
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -254,15 +279,29 @@ fun JarvisHudScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Command Input Bar
+        // Command Input Bar with Voice Mic & Send Button
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(
+                onClick = {
+                    onStartVoiceListening { spokenText ->
+                        commandInput = spokenText
+                    }
+                },
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(NeonCyan.copy(alpha = 0.15f), CircleShape)
+                    .border(1.dp, NeonCyan.copy(alpha = 0.6f), CircleShape)
+            ) {
+                Icon(Icons.Default.Mic, contentDescription = "Voice Command", tint = NeonCyan)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
             OutlinedTextField(
                 value = commandInput,
                 onValueChange = { commandInput = it },
-                placeholder = { Text("Command Jarvis (Code, GitHub, System, Apps)...", color = Color.Gray) },
+                placeholder = { Text("Command Jarvis...", color = Color.Gray) },
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonCyan,
