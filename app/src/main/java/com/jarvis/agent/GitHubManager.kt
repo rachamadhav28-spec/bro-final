@@ -25,7 +25,38 @@ class GitHubManager(private val tokenProvider: () -> String) {
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
     /**
-     * Creates or updates a file in a GitHub repository (Supports regular files and .github/workflows/*.yml)
+     * Creates a new GitHub Repository (No Delete allowed)
+     */
+    suspend fun createRepo(repoName: String, description: String, isPrivate: Boolean = false): String = withContext(Dispatchers.IO) {
+        val token = tokenProvider()
+        if (token.isBlank()) return@withContext "Error: GitHub Personal Access Token is missing in Settings."
+
+        val url = "https://api.github.com/user/repos"
+        val payload = JSONObject().apply {
+            put("name", repoName)
+            put("description", description)
+            put("private", isPrivate)
+            put("auto_init", true)
+        }
+
+        val req = Request.Builder()
+            .url(url)
+            .header("Authorization", "Bearer $token")
+            .header("Accept", "application/vnd.github+json")
+            .post(payload.toString().toRequestBody(jsonMediaType))
+            .build()
+
+        client.newCall(req).execute().use { res ->
+            if (res.isSuccessful) {
+                "Successfully created repository '$repoName'."
+            } else {
+                "GitHub Repo Creation Failed (${res.code}): ${res.body?.string()}"
+            }
+        }
+    }
+
+    /**
+     * Creates or updates a file in a GitHub repository (Supports regular code files and .github/workflows/*.yml)
      */
     suspend fun pushFileToRepo(
         owner: String,
