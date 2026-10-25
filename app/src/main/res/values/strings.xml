@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">J.A.R.V.I.S.</string>
+    <string name="accessibility_desc">Allows Jarvis to toggle Wi-Fi and Mobile Data, automate Instagram DMs, and inspect Claude usage limits.</string>
+</resources>
