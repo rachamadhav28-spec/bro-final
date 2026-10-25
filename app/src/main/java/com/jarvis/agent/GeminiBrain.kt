@@ -25,7 +25,7 @@ class GeminiBrain(
         Whenever the user asks you to perform a device action, GitHub action, app automation, or write code, respond strictly in valid JSON format matching this schema:
         {
           "spoken_reply": "Concise Jarvis-style confirmation to speak out loud",
-          "action": "NONE | SET_ALARM | SET_TIMER | SEND_GMAIL | OPEN_APP | TOGGLE_CONNECTIVITY | INSTA_DM | CHECK_CLAUDE | GITHUB_PUSH | GITHUB_WORKFLOW",
+          "action": "NONE | SET_ALARM | SET_TIMER | SEND_GMAIL | OPEN_APP | TOGGLE_CONNECTIVITY | INSTA_DM | CHECK_CLAUDE | GITHUB_CREATE_REPO | GITHUB_PUSH | GITHUB_WORKFLOW",
           "params": {
             "hour": 7,
             "minute": 30,
@@ -45,7 +45,7 @@ class GeminiBrain(
             "github_branch": "main",
             "workflow_file": "ci.yml"
           },
-          "generated_code": "Full, complete, production-ready code if user asked to write code or push code to GitHub. Never truncate code."
+          "generated_code": "Full, complete, production-ready long code if user asked to write code or push code to GitHub. Never truncate code."
         }
         CRITICAL RULE: You are strictly forbidden from deleting any GitHub repository, branch, or file.
     """.trimIndent()
@@ -137,6 +137,10 @@ class GeminiBrain(
                     params.optString("insta_message", "")
                 )
                 "CHECK_CLAUDE" -> systemExecutor.checkClaudeUsageLimit()
+                "GITHUB_CREATE_REPO" -> githubManager.createRepo(
+                    repoName = params.optString("github_repo", "jarvis-repo"),
+                    description = params.optString("label", "Created by Jarvis Mobile Agent")
+                )
                 "GITHUB_PUSH" -> githubManager.pushFileToRepo(
                     owner = params.optString("github_owner", ""),
                     repo = params.optString("github_repo", ""),
