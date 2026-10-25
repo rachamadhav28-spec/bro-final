@@ -75,7 +75,6 @@ class SystemActionExecutor(private val context: Context) {
             if (success) return "Toggled $target via Jarvis Accessibility Service."
         }
 
-        // Fallback to Android Settings Panel if Accessibility Service is not yet enabled
         val panelAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             Settings.Panel.ACTION_INTERNET_CONNECTIVITY
         } else {
@@ -87,7 +86,6 @@ class SystemActionExecutor(private val context: Context) {
     }
 
     fun sendInstagramDirectMessage(username: String, message: String): String {
-        // Opens Instagram profile directly via deep link, then uses Accessibility Service to DM
         val uri = Uri.parse("http://instagram.com/_u/$username")
         val intent = Intent(Intent.ACTION_VIEW, uri).apply {
             setPackage("com.instagram.android")
@@ -110,7 +108,6 @@ class SystemActionExecutor(private val context: Context) {
     }
 
     fun checkClaudeUsageLimit(): String {
-        // Opens Claude web usage page or app and scrapes remaining limit text via Accessibility
         val a11y = JarvisAccessibilityService.instance
         openApp("Claude")
         Thread.sleep(2000)
