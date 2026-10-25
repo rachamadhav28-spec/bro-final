@@ -161,7 +161,6 @@ fun JarvisHudScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top Header Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -179,7 +178,6 @@ fun JarvisHudScreen(
             }
         }
 
-        // Settings Drawer for Free Gemini Key, GitHub PAT, & Accessibility
         if (showSettings) {
             Column(
                 modifier = Modifier
@@ -220,7 +218,6 @@ fun JarvisHudScreen(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Animated Arc Reactor Core
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -256,7 +253,6 @@ fun JarvisHudScreen(
             )
         }
 
-        // Terminal Output Log
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -279,7 +275,6 @@ fun JarvisHudScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Command Input Bar with Voice Mic & Send Button
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
