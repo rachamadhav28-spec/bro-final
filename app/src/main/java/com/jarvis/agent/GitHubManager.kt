@@ -24,9 +24,6 @@ class GitHubManager(private val tokenProvider: () -> String) {
 
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
-    /**
-     * Creates a new GitHub Repository (No Delete allowed)
-     */
     suspend fun createRepo(repoName: String, description: String, isPrivate: Boolean = false): String = withContext(Dispatchers.IO) {
         val token = tokenProvider()
         if (token.isBlank()) return@withContext "Error: GitHub Personal Access Token is missing in Settings."
@@ -55,9 +52,6 @@ class GitHubManager(private val tokenProvider: () -> String) {
         }
     }
 
-    /**
-     * Creates or updates a file in a GitHub repository (Supports regular code files and .github/workflows/*.yml)
-     */
     suspend fun pushFileToRepo(
         owner: String,
         repo: String,
@@ -71,7 +65,6 @@ class GitHubManager(private val tokenProvider: () -> String) {
 
         val url = "https://api.github.com/repos/$owner/$repo/contents/$filePath"
 
-        // Step 1: Check if file already exists to retrieve its SHA for updating
         var existingSha: String? = null
         val getReq = Request.Builder()
             .url("$url?ref=$branch")
@@ -87,7 +80,6 @@ class GitHubManager(private val tokenProvider: () -> String) {
             }
         }
 
-        // Step 2: Base64 encode content and PUT to GitHub
         val encodedContent = Base64.encodeToString(fileContent.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
         val payload = JSONObject().apply {
             put("message", commitMessage)
@@ -114,9 +106,6 @@ class GitHubManager(private val tokenProvider: () -> String) {
         }
     }
 
-    /**
-     * Triggers a GitHub Actions workflow_dispatch event
-     */
     suspend fun triggerWorkflow(
         owner: String,
         repo: String,
